@@ -4,7 +4,7 @@ import { useState } from 'react';
 import logo from '../public/logo.png';
 
 export default function NavBar(){
-    const [menuOpen, setMenuOpen] = useState(false);
+    const [menuOpen, setMenuOpen] = useState<boolean>(false);
 
     return(
     <>    
