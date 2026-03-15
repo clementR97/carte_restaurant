@@ -96,7 +96,7 @@ export default function Menu() {
     <div className="w-full min-h-[400px] bg-[#FDF5ED] flex flex-col items-center justify-start p-6">
       <h2 className="text-3xl font-bold mb-8 text-gray-900">Nos Menu</h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-5xl">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 w-full max-w-4xl">
         {categories.map((cat) => (
           <button
             key={cat.id}
@@ -105,7 +105,7 @@ export default function Menu() {
             className="bg-white rounded-2xl shadow-md overflow-hidden text-left hover:shadow-lg transition-all border-0 flex flex-col"
           >
             <div className="relative w-full aspect-[4/3] overflow-hidden rounded-t-2xl">
-              <span className="absolute top-3 left-1/2 -translate-x-1/2 z-10 bg-gray-700 text-white text-sm font-medium px-3 py-1 rounded-full">
+              <span className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-gray-700 text-white text-base font-medium px-4 py-1.5 rounded-full">
                 Aperçu
               </span>
               <img
@@ -114,8 +114,8 @@ export default function Menu() {
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="p-4 flex flex-col items-center text-center">
-              <h3 className="text-xl font-bold text-gray-900">{cat.name}</h3>
+            <div className="p-6 flex flex-col items-center text-center">
+              <h3 className="text-2xl font-bold text-gray-900">{cat.name}</h3>
             </div>
           </button>
         ))}
