@@ -1,6 +1,10 @@
+'use client';
+
 import hero from '../public/hero.png';
+import { useOrderModal } from '@/app/context/OrderModalContext';
 
 export default function Hero(){
+    const { openOrderModal } = useOrderModal();
 
 
     return(
@@ -12,7 +16,7 @@ export default function Hero(){
                 <p className="text-2xl text-white max-w-xl capitalize mb-6">
                     Le Gouts des Caraibes Burgers, bokits et snacks délicieux
                 </p>
-                <button className="bg-sky-400 hover:bg-sky-500 text-white text-sm px-4 py-2 md:text-lg md:px-8 md:py-4 rounded-full shadow-md">
+                <button type="button" onClick={openOrderModal} className="bg-sky-400 hover:bg-sky-500 text-white text-sm px-4 py-2 md:text-lg md:px-8 md:py-4 rounded-full shadow-md">
                     Commander maintenant
                 </button>
             </div>

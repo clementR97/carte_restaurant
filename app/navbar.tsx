@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import logo from '../public/logo.png';
+import { useOrderModal } from '@/app/context/OrderModalContext';
 
 export default function NavBar(){
     const [menuOpen, setMenuOpen] = useState<boolean>(false);
+    const { openOrderModal } = useOrderModal();
 
     return(
     <>    
@@ -15,7 +17,7 @@ export default function NavBar(){
         <span className="self-center text-xl text-heading font-semibold whitespace-nowrap">KaruFoods</span>
     </a>
     <div className="flex md:order-2 items-center rtl:space-x-reverse">
-        <button type="button" className=" hidden md:inline-flex text-white bg-sky-400 hover:bg-brand-strong box-border border border-transparent focus:ring-4 focus:ring-brand-medium shadow-xs font-medium rounded-full text-base px-5 py-3 focus:outline-none">Commander</button>
+        <button type="button" onClick={openOrderModal} className=" hidden md:inline-flex text-white bg-sky-400 hover:bg-brand-strong box-border border border-transparent focus:ring-4 focus:ring-brand-medium shadow-xs font-medium rounded-full text-base px-5 py-3 focus:outline-none">Commander</button>
         <button
             type="button"
             className="rounded-full inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-body md:hidden hover:bg-neutral-secondary-soft hover:text-heading focus:outline-none focus:ring-2 focus:ring-neutral-tertiary"
@@ -46,7 +48,7 @@ export default function NavBar(){
           <a href="#" className="block py-2 px-3 text-heading rounded hover:bg-neutral-tertiary md:hover:bg-transparent md:border-0 md:hover:text-fg-brand md:p-0 md:dark:hover:bg-transparent" onClick={() => setMenuOpen(false)}>Contact</a>
         </li>
         <li>
-        <button type="button" className=" md:hidden text-white bg-sky-400 hover:bg-brand-strong box-border border border-transparent focus:ring-4 focus:ring-brand-medium shadow-xs font-medium rounded-full text-base px-5 py-3 focus:outline-none">Commander</button>
+        <button type="button" onClick={() => { openOrderModal(); setMenuOpen(false); }} className=" md:hidden text-white bg-sky-400 hover:bg-brand-strong box-border border border-transparent focus:ring-4 focus:ring-brand-medium shadow-xs font-medium rounded-full text-base px-5 py-3 focus:outline-none">Commander</button>
 
         </li>
       </ul>
