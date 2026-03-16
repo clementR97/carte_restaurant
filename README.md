@@ -1,37 +1,188 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Karu'Foods — Application de commande (fast food antillais)
 
-## Getting Started
+Application web de commande en ligne pour un fast food antillais : menu (Bokit, Agoulou, Sandwiches, Desserts), options (sauces, boissons, suppléments), tableau de bord admin et suivi de commande.
 
-First, run the development server:
+---
+
+## Présentation
+
+Karu'Foods permet aux clients de :
+- Consulter le menu et commander (à emporter ou sur place)
+- Choisir des options par article (type seul / avec cannette, sauces, boissons, suppléments)
+- Voir le détail des prix (plat + cannette + suppléments) et le total avant paiement
+- Suivre leur commande via un lien unique après envoi
+
+L’admin peut :
+- Voir les commandes du jour et les marquer comme prêtes
+- Modifier la configuration du menu (plats, boissons, suppléments) et les prix
+- Consulter le total par commande et le total du jour
+
+---
+
+## Fonctionnalités
+
+| Zone | Fonctionnalité |
+|------|----------------|
+| **Site client** | Page d’accueil avec Hero, section Menu, Footer |
+| | Navbar : Menu (scroll vers section), Contact (scroll vers footer), bouton Commander |
+| | Modal de commande en 4 étapes : Emporter/Sur place → Catégorie + plats → Options (type, sauces, boisson, suppléments) → Infos client + total → Confirmation + numéro de commande |
+| | Calcul des prix : plat + cannette (si choisi) + suppléments ; affichage du total à l’étape paiement |
+| | Limite de quantité par plat (ex. 20), bouton Annuler pour laisser un autre client commander |
+| **Suivi commande** | Page `/commande/[id]?token=xxx` : statut (En cours / Prête) sans connexion |
+| **Admin** | Login `/admin/login` (email + mot de passe, cookie sécurisé) |
+| | Dashboard : onglet Commandes (liste du jour, total par commande, total du jour, « Marquer prête ») |
+| | Dashboard : onglet Configurations (éditer/ajouter/supprimer plats, boissons, suppléments et leurs prix) |
+| **API** | `POST /api/orders` — créer une commande |
+| | `GET /api/orders` — lister les commandes du jour (admin) |
+| | `GET/PATCH /api/config/menu` — lire/modifier la configuration menu (PATCH réservé à l’admin) |
+| | `PATCH /api/orders/[id]/ready` — marquer une commande comme prête |
+
+---
+
+## Structure du projet
+
+```
+├── app/
+│   ├── admin/                 # Espace admin
+│   │   ├── login/page.tsx     # Connexion admin
+│   │   └── page.tsx          # Dashboard (Commandes + Configurations)
+│   ├── api/
+│   │   ├── admin/             # Login / logout admin
+│   │   ├── config/menu/       # GET/PATCH configuration menu
+│   │   └── orders/            # CRUD commandes, marquer prête
+│   ├── commande/[id]/page.tsx # Suivi commande client (token)
+│   ├── components/
+│   │   └── OrderModal.tsx     # Modal de commande (étapes, panier, totaux)
+│   ├── context/
+│   │   └── OrderModalContext.tsx
+│   ├── navbar.tsx
+│   ├── hero.tsx
+│   ├── menu.tsx               # Section menu (cartes catégories)
+│   ├── footer.tsx
+│   ├── layout.tsx
+│   └── page.tsx               # Accueil (NavBar, Hero, Menu, Footer)
+├── lib/
+│   ├── auth/admin.ts          # Vérification cookie admin
+│   ├── controllers/orderController.ts
+│   ├── db/
+│   │   ├── mongodb.ts         # Connexion MongoDB
+│   │   ├── orders.ts          # Commandes (add, get, markReady, etc.)
+│   │   ├── menuConfig.ts      # Config menu (get, update)
+│   │   └── models/            # OrderModel, MenuConfigModel, AdminModel
+│   ├── data/
+│   │   ├── menuData.ts        # Données menu par défaut (statiques)
+│   │   └── defaultMenuConfig.ts
+│   ├── models/order.ts        # Types Order, Client, MenuChoisi
+│   ├── types/menuConfig.ts
+│   ├── utils/price.ts         # parsePrice, formatPrice
+│   └── validation/orderSchema.ts  # Schémas Zod
+├── public/                    # Images (logo, bokit, hero, etc.)
+├── middleware.ts              # Protection routes /admin (sauf login)
+└── .env / .env.example        # MONGODB_URI, ADMIN_*, etc.
+```
+
+---
+
+## Technologies utilisées
+
+| Techno | Usage |
+|--------|--------|
+| **Next.js 16** (App Router) | Pages, API Routes, layout |
+| **React 19** | Composants, hooks, contexte (OrderModal) |
+| **TypeScript** | Typage global |
+| **Tailwind CSS 4** | Styles |
+| **MongoDB (Mongoose)** | Base de données (Atlas) : commandes, config menu, admins |
+| **Zod** | Validation des payloads (création de commande) |
+| **bcrypt** | Hash des mots de passe admin |
+| **Cookie** | Session admin (`admin_token` = `ADMIN_SECRET`) |
+
+---
+
+## Installation et lancement
+
+1. Cloner le dépôt et installer les dépendances :
+
+```bash
+npm install
+```
+
+2. Copier `.env.example` en `.env` et renseigner :
+
+- `MONGODB_URI` : chaîne de connexion MongoDB Atlas
+- `ADMIN_EMAIL` / `ADMIN_PASSWORD` : compte admin (créé au premier login si aucun admin en base)
+- `ADMIN_SECRET` : secret du cookie (ex. `openssl rand -hex 32`)
+
+3. Lancer en développement :
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Ouvrir [http://localhost:3000](http://localhost:3000). Admin : [http://localhost:3000/admin](http://localhost:3000/admin).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Problèmes rencontrés et solutions
 
-## Learn More
+| Problème | Cause | Solution |
+|----------|--------|----------|
+| **E11000 duplicate key (id: "0001")** | ID de commande généré en mémoire ; au redémarrage du serveur le compteur repartait à 0001 alors que des commandes existaient déjà en base. | Génération de l’ID à partir du max en base (agrégation MongoDB `$max` sur `id` converti en nombre), puis `max + 1`. |
+| **ConversionFailure ($toInt)** | Certains documents en base avaient un `id` non numérique (ex. `cmd_xxx`), ce qui faisait échouer `$toInt` dans l’agrégation. | Utilisation de `$convert` avec `onError: null` et `$match: { idNum: { $ne: null } }` pour ignorer les ids non numériques. |
+| **400 Bad Request à l’envoi de commande** | Validation Zod (téléphone, champs manquants, etc.) ou erreur serveur renvoyée en 400. | Validation assouplie (trim, totalAmount nullable), messages d’erreur détaillés dans la réponse 400 ; erreurs non-validation renvoyées en 500 avec log serveur ; frontend affiche le message retourné par l’API. |
+| **Scroll Menu / Contact** | Liens navbar vers #menu et #contact sans cible. | Ajout de `id="menu"` et `id="contact"` sur les sections contenant `<Menu />` et `<Footer />`, avec `scroll-mt-16` pour compenser la navbar fixe. |
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Aperçu
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Tu peux ajouter des captures d’écran dans le dossier `docs/` ou `public/` et les référencer ici.
 
-## Deploy on Vercel
+### Accueil et navigation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+<!-- Remplacer par le chemin vers ton image, ex: ![Accueil](./docs/apercu-accueil.png) -->
+![Aperçu accueil](./docs/apercu-accueil.png)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# carte_restaurant
+*Page d’accueil : navbar, hero, lien Menu / Contact.*
+
+---
+
+### Modal de commande
+
+<!-- ex: ![Modal commande](./docs/apercu-modal-commande.png) -->
+![Modal commande](./docs/apercu-modal-commande.png)
+
+*Étapes du modal : choix emporter/sur place, catégories et plats, options (type, sauces, boisson, suppléments), total et confirmation.*
+
+---
+
+### Dashboard admin — Commandes
+
+<!-- ex: ![Dashboard commandes](./docs/apercu-dashboard-commandes.png) -->
+![Dashboard commandes](./docs/apercu-dashboard-commandes.png)
+
+*Liste des commandes du jour, total par commande, total du jour, bouton « Marquer prête ».*
+
+---
+
+### Dashboard admin — Configurations
+
+<!-- ex: ![Dashboard config](./docs/apercu-dashboard-config.png) -->
+![Dashboard config](./docs/apercu-dashboard-config.png)
+
+*Édition des menus (plats, prix, descriptions), boissons et suppléments ; ajout / suppression de lignes.*
+
+---
+
+### Suivi de commande
+
+<!-- ex: ![Suivi commande](./docs/apercu-suivi-commande.png) -->
+![Suivi commande](./docs/apercu-suivi-commande.png)
+
+*Page `/commande/[id]?token=xxx` : statut de la commande.*
+
+---
+
+Pour remplacer les placeholders par de vraies images :
+1. Créer un dossier `docs/` à la racine du projet (ou utiliser `public/`).
+2. Y déposer tes captures (ex. `apercu-accueil.png`, `apercu-modal-commande.png`, etc.).
+3. Adapter les chemins ci-dessus si besoin (ex. `./public/apercu-accueil.png`).
