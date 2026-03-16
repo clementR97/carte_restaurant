@@ -1,16 +1,17 @@
 /**
  * API Commandes (MVC - View = réponse JSON)
- * POST /api/orders → créer une commande
- * GET  /api/orders → lister les commandes
+ * POST /api/orders → créer une commande (client)
+ * GET  /api/orders → lister les commandes (admin uniquement)
  */
 
 import { NextResponse } from 'next/server';
 import { createOrder, listOrders } from '@/lib/controllers/orderController';
+import { isAdmin } from '@/lib/auth/admin';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const result = createOrder(body);
+    const result = await createOrder(body);
     if (!result.success) {
       return NextResponse.json(
         { error: 'Validation échouée', details: result.errors },
@@ -26,9 +27,12 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  if (!isAdmin(request)) {
+    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+  }
   try {
-    const orders = listOrders();
+    const orders = await listOrders();
     return NextResponse.json(orders);
   } catch {
     return NextResponse.json(

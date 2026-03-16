@@ -12,6 +12,10 @@ export const menuChoisiSchema = z.object({
   itemName: z.string().min(1, 'Nom du plat requis'),
   price: z.string().min(1, 'Prix requis'),
   quantity: z.number().int().positive().optional().default(1),
+  typeChoice: z.enum(['seul', 'cannette']).optional(),
+  sauces: z.array(z.string()).optional(),
+  drink: z.string().optional(),
+  supplements: z.array(z.string()).optional(),
 });
 
 export const clientSchema = z.object({
@@ -24,6 +28,8 @@ export const clientSchema = z.object({
 export const createOrderSchema = z.object({
   client: clientSchema,
   menuChoisi: z.array(menuChoisiSchema).min(1, 'Au moins un plat requis'),
+  orderType: z.enum(['emporter', 'sur place']).optional(),
+  totalAmount: z.number().min(0).optional(),
 });
 
 export type CreateOrderSchemaType = z.infer<typeof createOrderSchema>;
