@@ -6,22 +6,25 @@ import type { Order, OrderStatus } from '@/lib/models/order';
 import { connectDB } from '@/lib/db/mongodb';
 import { OrderModel } from '@/lib/db/models/OrderModel';
 
-let currentDayKey = new Date().toISOString().slice(0, 10); // AAAA-MM-JJ
-let dailyCounter = 0;
-
-function generateId(): string {
-  const todayKey = new Date().toISOString().slice(0, 10);
-  if (todayKey !== currentDayKey) {
-    currentDayKey = todayKey;
-    dailyCounter = 0;
-  }
-  dailyCounter += 1;
-  if (dailyCounter > 9999) {
-    // Sécurité : on reboucle si plus de 9999 commandes dans la journée
-    dailyCounter = 1;
-  }
-  // 4 chiffres, ex: 0001, 0023, 1234
-  return dailyCounter.toString().padStart(4, '0');
+/**
+ * Génère un id unique en prenant le max existant en base + 1
+ * (évite E11000 duplicate key au redémarrage du serveur).
+ * Les documents dont l'id n'est pas un nombre (ex: cmd_xxx) sont ignorés.
+ */
+async function generateId(): Promise<string> {
+  const result = await OrderModel.aggregate<{ maxId: number }>([
+    {
+      $addFields: {
+        idNum: {
+          $convert: { input: '$id', to: 'int', onError: null, onNull: null },
+        },
+      },
+    },
+    { $match: { idNum: { $ne: null } } },
+    { $group: { _id: null, maxId: { $max: '$idNum' } } },
+  ]);
+  const nextNum = (result[0]?.maxId ?? 0) + 1;
+  return nextNum <= 9999 ? nextNum.toString().padStart(4, '0') : nextNum.toString();
 }
 
 function generateClientToken(): string {
@@ -35,8 +38,9 @@ export async function addOrder(
   totalAmount?: number
 ): Promise<Order> {
   await connectDB();
+  const id = await generateId();
   const order: Order = {
-    id: generateId(),
+    id,
     client,
     menuChoisi,
     createdAt: new Date().toISOString(),

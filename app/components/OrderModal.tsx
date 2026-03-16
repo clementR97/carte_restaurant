@@ -181,13 +181,19 @@ function OrderModal() {
           totalAmount: Math.round(totalAmount * 100) / 100,
         }),
       });
-      if (!res.ok) throw new Error('Erreur envoi');
+      if (!res.ok) {
+        const errData = (await res.json().catch(() => ({}))) as { error?: string; details?: string[] };
+        const message = errData.details?.length
+          ? `${errData.error ?? 'Erreur'}: ${errData.details.join(', ')}`
+          : errData.error ?? 'Erreur lors de l\'envoi de la commande.';
+        throw new Error(message);
+      }
       const data = (await res.json()) as { id: string; clientToken?: string };
       setOrderId(data.id);
       setClientToken(data.clientToken ?? null);
       setStep(4);
-    } catch {
-      alert('Erreur lors de l\'envoi de la commande.');
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Erreur lors de l\'envoi de la commande.');
     } finally {
       setSubmitting(false);
     }

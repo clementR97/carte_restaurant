@@ -19,10 +19,11 @@ export async function POST(request: Request) {
       );
     }
     return NextResponse.json(result.order, { status: 201 });
-  } catch {
+  } catch (err) {
+    console.error('POST /api/orders error:', err);
     return NextResponse.json(
-      { error: 'Requête invalide' },
-      { status: 400 }
+      { error: err instanceof Error ? err.message : 'Erreur serveur' },
+      { status: 500 }
     );
   }
 }

@@ -36,20 +36,32 @@ export default function NavBar(){
     <div className={`${menuOpen ? 'flex' : 'hidden'} md:flex items-center justify-between w-full md:w-auto md:order-1`} id="navbar-sticky">
       <ul className="flex flex-col items-center text-center w-full p-4 md:p-0 mt-4 font-medium  rounded-base bg-neutral-secondary-soft md:flex-row md:w-auto md:items-stretch md:text-left md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-neutral-primary">
         <li>
-          <a href="#" className="block py-2 px-3 text-white bg-brand rounded-sm border border-white md:border-0 md:bg-transparent md:text-fg-brand md:p-0" aria-current="page" onClick={() => setMenuOpen(false)}>Home</a>
+          <a
+            href="#menu"
+            className="block py-2 px-3 text-heading rounded hover:bg-neutral-tertiary md:hover:bg-transparent md:border-0 md:hover:text-fg-brand md:p-0"
+            onClick={() => setMenuOpen(false)}
+          >
+            Menu
+          </a>
         </li>
         <li>
-          <a href="#" className="block py-2 px-3  text-heading rounded hover:bg-neutral-tertiary md:hover:bg-transparent md:border-0 md:hover:text-fg-brand md:p-0 md:dark:hover:bg-transparent" onClick={() => setMenuOpen(false)}>About</a>
+          <a
+            href="#contact"
+            className="block py-2 px-3 text-heading rounded hover:bg-neutral-tertiary md:hover:bg-transparent md:border-0 md:hover:text-fg-brand md:p-0"
+            onClick={() => setMenuOpen(false)}
+          >
+            Contact
+          </a>
         </li>
+        
         <li>
-          <a href="#" className="block py-2 px-3 text-heading rounded hover:bg-neutral-tertiary md:hover:bg-transparent md:border-0 md:hover:text-fg-brand md:p-0 md:dark:hover:bg-transparent" onClick={() => setMenuOpen(false)}>Services</a>
-        </li>
-        <li>
-          <a href="#" className="block py-2 px-3 text-heading rounded hover:bg-neutral-tertiary md:hover:bg-transparent md:border-0 md:hover:text-fg-brand md:p-0 md:dark:hover:bg-transparent" onClick={() => setMenuOpen(false)}>Contact</a>
-        </li>
-        <li>
-        <button type="button" onClick={() => { openOrderModal(); setMenuOpen(false); }} className=" md:hidden text-white bg-sky-400 hover:bg-brand-strong box-border border border-transparent focus:ring-4 focus:ring-brand-medium shadow-xs font-medium rounded-full text-base px-5 py-3 focus:outline-none">Commander</button>
-
+          <button
+            type="button"
+            onClick={() => { openOrderModal(); setMenuOpen(false); }}
+            className="md:hidden text-white bg-sky-400 hover:bg-brand-strong box-border border border-transparent focus:ring-4 focus:ring-brand-medium shadow-xs font-medium rounded-full text-base px-5 py-3 focus:outline-none"
+          >
+            Commander
+          </button>
         </li>
       </ul>
     </div>

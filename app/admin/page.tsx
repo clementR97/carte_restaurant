@@ -331,9 +331,40 @@ export default function AdminDashboardPage() {
                               }}
                               placeholder="Description"
                             />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const next = {
+                                  ...config,
+                                  categories: config.categories.map((c, i) =>
+                                    i === ci ? { ...c, items: c.items.filter((_, j) => j !== ii) } : c
+                                  ),
+                                };
+                                setConfig(next);
+                              }}
+                              className="text-red-600 hover:text-red-800 text-sm px-2 py-1"
+                              title="Supprimer ce plat"
+                            >
+                              Supprimer
+                            </button>
                           </li>
                         ))}
                       </ul>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = {
+                            ...config,
+                            categories: config.categories.map((c, i) =>
+                              i === ci ? { ...c, items: [...c.items, { name: '', price: 0, contents: '' }] } : c
+                            ),
+                          };
+                          setConfig(next);
+                        }}
+                        className="mt-2 px-3 py-1.5 text-sm bg-sky-600 text-white rounded-lg hover:bg-sky-700"
+                      >
+                        + Ajouter un plat dans {cat.name}
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -342,7 +373,7 @@ export default function AdminDashboardPage() {
                   <h2 className="text-lg font-bold mb-3">Boissons (prix cannette)</h2>
                   <ul className="space-y-2">
                     {config.drinks.map((d, i) => (
-                      <li key={d.name} className="flex gap-2 items-center">
+                      <li key={i} className="flex flex-wrap gap-2 items-center">
                         <input
                           className="border rounded px-2 py-1 w-40"
                           value={d.name}
@@ -364,16 +395,37 @@ export default function AdminDashboardPage() {
                           }}
                         />
                         <span className="text-gray-500">€</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = { ...config, drinks: config.drinks.filter((_, j) => j !== i) };
+                            setConfig(next);
+                          }}
+                          className="text-red-600 hover:text-red-800 text-sm px-2 py-1"
+                          title="Supprimer cette boisson"
+                        >
+                          Supprimer
+                        </button>
                       </li>
                     ))}
                   </ul>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = { ...config, drinks: [...config.drinks, { name: '', price: 0 }] };
+                      setConfig(next);
+                    }}
+                    className="mt-2 px-3 py-1.5 text-sm bg-sky-600 text-white rounded-lg hover:bg-sky-700"
+                  >
+                    + Ajouter une boisson
+                  </button>
                 </div>
 
                 <div>
                   <h2 className="text-lg font-bold mb-3">Suppléments (prix unitaire)</h2>
                   <ul className="space-y-2">
                     {config.supplements.map((s, i) => (
-                      <li key={s.name} className="flex gap-2 items-center">
+                      <li key={i} className="flex flex-wrap gap-2 items-center">
                         <input
                           className="border rounded px-2 py-1 w-40"
                           value={s.name}
@@ -395,9 +447,30 @@ export default function AdminDashboardPage() {
                           }}
                         />
                         <span className="text-gray-500">€</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = { ...config, supplements: config.supplements.filter((_, j) => j !== i) };
+                            setConfig(next);
+                          }}
+                          className="text-red-600 hover:text-red-800 text-sm px-2 py-1"
+                          title="Supprimer ce supplément"
+                        >
+                          Supprimer
+                        </button>
                       </li>
                     ))}
                   </ul>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = { ...config, supplements: [...config.supplements, { name: '', price: 0 }] };
+                      setConfig(next);
+                    }}
+                    className="mt-2 px-3 py-1.5 text-sm bg-sky-600 text-white rounded-lg hover:bg-sky-700"
+                  >
+                    + Ajouter un supplément
+                  </button>
                 </div>
 
                 <button

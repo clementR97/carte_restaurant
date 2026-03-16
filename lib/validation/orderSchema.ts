@@ -19,9 +19,9 @@ export const menuChoisiSchema = z.object({
 });
 
 export const clientSchema = z.object({
-  nom: z.string().min(1, 'Nom requis').max(100),
-  prenom: z.string().min(1, 'Prénom requis').max(100),
-  telephone: z.string().min(8, 'Numéro de téléphone invalide').max(20),
+  nom: z.string().trim().min(1, 'Nom requis').max(100),
+  prenom: z.string().trim().min(1, 'Prénom requis').max(100),
+  telephone: z.string().trim().min(8, 'Numéro de téléphone invalide (min. 8 caractères)').max(20),
   modePaiement: modePaiementEnum,
 });
 
@@ -29,7 +29,7 @@ export const createOrderSchema = z.object({
   client: clientSchema,
   menuChoisi: z.array(menuChoisiSchema).min(1, 'Au moins un plat requis'),
   orderType: z.enum(['emporter', 'sur place']).optional(),
-  totalAmount: z.number().min(0).optional(),
+  totalAmount: z.number().min(0).optional().nullable().transform((v) => (v == null ? undefined : v)),
 });
 
 export type CreateOrderSchemaType = z.infer<typeof createOrderSchema>;

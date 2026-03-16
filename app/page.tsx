@@ -6,10 +6,14 @@ import Footer from "./footer"
 export default function Home() {
   return (
     <div className="flex flex-col">
-    <NavBar />
-    <Hero />
-    <Menu />
-    <Footer />
+      <NavBar />
+      <Hero />
+      <section id="menu" className="scroll-mt-16">
+        <Menu />
+      </section>
+      <footer id="contact" className="scroll-mt-16">
+        <Footer />
+      </footer>
     </div>
   )
 }
