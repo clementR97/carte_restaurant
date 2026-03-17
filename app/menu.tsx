@@ -1,86 +1,33 @@
 'use client';
 
-import { useState } from 'react';
-
-type MenuItem = {
-  name: string;
-  price: string;
-  contents: string;
-};
-
-type Category = {
-  id: string;
-  name: string;
-  description: string;
-  priceFrom: string;
-  image: string;
-  items: MenuItem[];
-};
-
-const categories: Category[] = [
-  {
-    id: 'bokit',
-    name: 'Bokit',
-    description: 'Poulet croustillant, sauce maison',
-    priceFrom: '5,50 €',
-    image: '/bokit.png',
-    items: [
-      { name: 'Bokit Poulet', price: '5,50 €', contents: 'Poulet grillé, salade, tomate, oignon, sauce créole, pain bokit.' },
-      { name: 'Bokit Morue', price: '6 €', contents: 'Morue frite, salade, tomate, sauce chien, pain bokit.' },
-      { name: 'Bokit Crevette', price: '6,50 €', contents: 'Crevettes, salade, avocat, sauce créole, pain bokit.' },
-    ],
-  },
-  {
-    id: 'agoulou',
-    name: 'Agoulou',
-    description: 'Riz, haricots, sauce agoulou',
-    priceFrom: '7 €',
-    image: '/agoulou.png',
-    items: [
-      { name: 'Agoulou Poulet', price: '7 €', contents: 'Poulet, riz, haricots rouges, sauce agoulou, légumes.' },
-      { name: 'Agoulou Poisson', price: '7,50 €', contents: 'Poisson, riz, haricots, sauce agoulou, banane plantain.' },
-    ],
-  },
-  {
-    id: 'sandwiches',
-    name: 'Sandwiches',
-    description: 'Pain frais, garnitures variées',
-    priceFrom: '4 €',
-    image: '/hero.png',
-    items: [
-      { name: 'Sandwich Poulet', price: '4,50 €', contents: 'Poulet, salade, tomate, mayonnaise, pain.' },
-      { name: 'Sandwich Thon', price: '4 €', contents: 'Thon, maïs, salade, pain.' },
-      { name: 'Sandwich Jambon-fromage', price: '4 €', contents: 'Jambon, fromage, beurre, pain.' },
-    ],
-  },
-  {
-    id: 'dessert',
-    name: 'Desserts',
-    description: 'Pâtisseries et douceurs des îles',
-    priceFrom: '3 €',
-    image: '/hero.png',
-    items: [
-      { name: 'Tourment d\'amour', price: '3 €', contents: 'Biscuit coco, confiture de goyave, noix de coco râpée.' },
-      { name: 'Sorbet coco', price: '3,50 €', contents: 'Sorbet à la noix de coco fraîche.' },
-      { name: 'Salade de fruits', price: '4 €', contents: 'Fruits de saison, sirop, menthe.' },
-    ],
-  },
-];
+import { useState, useEffect } from 'react';
+import type { MenuConfigCategory, MenuConfigItem } from '@/lib/types/menuConfig';
+import { formatPrice } from '@/lib/utils/price';
 
 export default function Menu() {
+  const [categories, setCategories] = useState<MenuConfigCategory[]>([]);
+  const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<MenuConfigCategory | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<MenuConfigItem | null>(null);
 
-  const openCategory = (cat: Category) => {
+  useEffect(() => {
+    fetch('/api/config/menu')
+      .then((res) => res.json())
+      .then((data) => setCategories(data.categories ?? []))
+      .catch(() => setCategories([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const openCategory = (cat: MenuConfigCategory) => {
     setSelectedCategory(cat);
     setModalOpen(true);
     setDetailModalOpen(false);
     setSelectedItem(null);
   };
 
-  const openItemDetail = (item: MenuItem) => {
+  const openItemDetail = (item: MenuConfigItem) => {
     setSelectedItem(item);
     setDetailModalOpen(true);
   };
@@ -96,8 +43,11 @@ export default function Menu() {
     <div className="w-full min-h-[400px] bg-[#FDF5ED] flex flex-col items-center justify-start p-6">
       <h2 className="text-3xl font-bold mb-8 text-gray-900">Nos Menu</h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 w-full max-w-4xl">
-        {categories.map((cat) => (
+      {loading ? (
+        <p className="text-gray-500">Chargement du menu…</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 w-full max-w-4xl">
+          {categories.map((cat) => (
           <button
             key={cat.id}
             type="button"
@@ -118,8 +68,9 @@ export default function Menu() {
               <h3 className="text-2xl font-bold text-gray-900">{cat.name}</h3>
             </div>
           </button>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Modal 1 : liste + prix + bouton Commander */}
       {modalOpen && selectedCategory && (
@@ -159,7 +110,9 @@ export default function Menu() {
                     >
                       {item.name}
                     </button>
-                    <span className="text-gray-700 font-medium shrink-0">{item.price}</span>
+                    <span className="text-gray-700 font-medium shrink-0">
+                      {formatPrice(item.price)}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -191,7 +144,9 @@ export default function Menu() {
           >
             <h4 className="text-xl font-bold mb-2">{selectedItem.name}</h4>
             <p className="text-gray-600 mb-4">{selectedItem.contents}</p>
-            <p className="text-lg font-semibold text-gray-800 mb-4">{selectedItem.price}</p>
+            <p className="text-lg font-semibold text-gray-800 mb-4">
+              {formatPrice(selectedItem.price)}
+            </p>
             <button
               type="button"
               onClick={() => { setDetailModalOpen(false); setSelectedItem(null); }}
