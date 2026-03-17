@@ -140,7 +140,9 @@ Tu peux ajouter des captures d’écran dans le dossier `docs/` ou `public/` et 
 ### Accueil et navigation
 
 <!-- Remplacer par le chemin vers ton image, ex: ![Accueil](./docs/apercu-accueil.png) -->
-![Aperçu accueil](./docs/apercu-accueil.png)
+![Aperçu accueil](./ScreenShoots/KaruFood_Accueil1.png)
+![Aperçu accueil](./ScreenShoots/KaruFood_Accueil2.png)
+![Aperçu accueil](./ScreenShoots/KaruFood_Accueil3.png)
 
 *Page d’accueil : navbar, hero, lien Menu / Contact.*
 
@@ -158,7 +160,7 @@ Tu peux ajouter des captures d’écran dans le dossier `docs/` ou `public/` et 
 ### Dashboard admin — Commandes
 
 <!-- ex: ![Dashboard commandes](./docs/apercu-dashboard-commandes.png) -->
-![Dashboard commandes](./docs/apercu-dashboard-commandes.png)
+![Dashboard commandes](./ScreenShoots/KaruFoodAdmin_Commande.png)
 
 *Liste des commandes du jour, total par commande, total du jour, bouton « Marquer prête ».*
 
@@ -167,7 +169,9 @@ Tu peux ajouter des captures d’écran dans le dossier `docs/` ou `public/` et 
 ### Dashboard admin — Configurations
 
 <!-- ex: ![Dashboard config](./docs/apercu-dashboard-config.png) -->
-![Dashboard config](./docs/apercu-dashboard-config.png)
+![Dashboard config](./ScreenShoots/KaruFoodAdmin_Config.png)
+![Dashboard config](./ScreenShoots/KaruFoodAdmin_Config2.png)
+
 
 *Édition des menus (plats, prix, descriptions), boissons et suppléments ; ajout / suppression de lignes.*
 
@@ -176,10 +180,21 @@ Tu peux ajouter des captures d’écran dans le dossier `docs/` ou `public/` et 
 ### Suivi de commande
 
 <!-- ex: ![Suivi commande](./docs/apercu-suivi-commande.png) -->
-![Suivi commande](./docs/apercu-suivi-commande.png)
+![Suivi commande](./ScreenShoots/KaruFood_Suivie.png)
 
 *Page `/commande/[id]?token=xxx` : statut de la commande.*
 
+---
+
+### Action de commande
+![Action de commande](./ScreenShoots/action-commande.gif)
+
+vidéo gif d'une commande
+---
+### Action & config de la partie Admin
+![Action de commande](./ScreenShoots/action-admin.gif)
+
+vidéo gif d'une commande
 ---
 
 Pour remplacer les placeholders par de vraies images :
