@@ -194,7 +194,7 @@ vidéo gif d'une commande
 ### Action & config de la partie Admin
 ![Action de commande](./ScreenShoots/action-admin.gif)
 
-vidéo gif d'une commande
+vidéo gif de l'administrateur
 ---
 
 Pour remplacer les placeholders par de vraies images :
