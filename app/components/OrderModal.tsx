@@ -39,7 +39,6 @@ function OrderModal() {
   const [menuConfig, setMenuConfig] = useState<MenuConfig | null>(null);
   const [step, setStep] = useState(0);
   const [orderType, setOrderType] = useState<OrderType | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<MenuConfigCategory | null>(null);
   const [cart, setCart] = useState<CartLine[]>([]);
   const [optionsByIndex, setOptionsByIndex] = useState<Record<number, Partial<LineOptions>>>({});
   const [formData, setFormData] = useState({ nom: '', prenom: '', telephone: '' });
@@ -59,7 +58,6 @@ function OrderModal() {
   const resetModal = useCallback(() => {
     setStep(0);
     setOrderType(null);
-    setSelectedCategory(null);
     setCart([]);
     setOptionsByIndex({});
     setFormData({ nom: '', prenom: '', telephone: '' });
@@ -72,31 +70,29 @@ function OrderModal() {
     closeOrderModal();
   }, [closeOrderModal, resetModal]);
 
-  const getQuantity = (item: MenuConfigItem) => {
-    const line = cart.find((l) => l.itemName === item.name && l.categoryId === selectedCategory?.id);
+  const getQuantity = (categoryId: string, itemName: string) => {
+    const line = cart.find((l) => l.itemName === itemName && l.categoryId === categoryId);
     return line?.quantity ?? 0;
   };
 
-  const addToCart = (item: MenuConfigItem) => {
-    if (!selectedCategory) return;
-    const currentQty = cart.find((l) => l.itemName === item.name && l.categoryId === selectedCategory.id)?.quantity ?? 0;
+  const addToCart = (category: MenuConfigCategory, item: MenuConfigItem) => {
+    const currentQty = cart.find((l) => l.itemName === item.name && l.categoryId === category.id)?.quantity ?? 0;
     if (currentQty >= MAX_QUANTITY_PER_ITEM) return;
     const priceStr = formatPrice(item.price);
     setCart((prev) => {
-      const i = prev.findIndex((l) => l.itemName === item.name && l.categoryId === selectedCategory.id);
+      const i = prev.findIndex((l) => l.itemName === item.name && l.categoryId === category.id);
       if (i >= 0) {
         const next = [...prev];
         next[i] = { ...next[i], quantity: Math.min(next[i].quantity + 1, MAX_QUANTITY_PER_ITEM) };
         return next;
       }
-      return [...prev, { categoryId: selectedCategory.id, categoryName: selectedCategory.name, itemName: item.name, price: priceStr, priceNumber: item.price, quantity: 1 }];
+      return [...prev, { categoryId: category.id, categoryName: category.name, itemName: item.name, price: priceStr, priceNumber: item.price, quantity: 1 }];
     });
   };
 
-  const removeFromCart = (item: MenuConfigItem) => {
-    if (!selectedCategory) return;
+  const removeFromCart = (categoryId: string, itemName: string) => {
     setCart((prev) => {
-      const i = prev.findIndex((l) => l.itemName === item.name && l.categoryId === selectedCategory.id);
+      const i = prev.findIndex((l) => l.itemName === itemName && l.categoryId === categoryId);
       if (i < 0) return prev;
       const next = [...prev];
       if (next[i].quantity <= 1) return next.filter((_, j) => j !== i);
@@ -124,19 +120,29 @@ function OrderModal() {
     [cart]
   );
 
+  // Si le panier change (ajout/suppression), on repart sur des options vides.
+  // Cela évite des décalages d'index entre `expandedCart` et `optionsByIndex`.
+  useEffect(() => {
+    setOptionsByIndex({});
+  }, [cart]);
+
   /** Prix par ligne (base + cannette + suppléments) et total */
   const { lineTotals, totalAmount } = useMemo(() => {
     if (!menuConfig) return { lineTotals: [] as number[], totalAmount: 0 };
     const totals: number[] = expandedCart.map((line, i) => {
       const opt = optionsByIndex[i] ?? {};
       let sum = line.priceNumber;
+      const isDessert = line.categoryId === 'dessert';
       if (opt.type === 'cannette' && opt.drink) {
         const drinkPrice = menuConfig.drinks.find((d) => d.name === opt.drink)?.price ?? 0;
         sum += drinkPrice;
       }
-      (opt.supplements ?? []).forEach((name) => {
-        sum += menuConfig.supplements.find((s) => s.name === name)?.price ?? 0;
-      });
+      // Les desserts n'ont ni sauce (pas d'impact prix ici) ni suppléments.
+      if (!isDessert) {
+        (opt.supplements ?? []).forEach((name) => {
+          sum += menuConfig.supplements.find((s) => s.name === name)?.price ?? 0;
+        });
+      }
       return sum;
     });
     return { lineTotals: totals, totalAmount: totals.reduce((a, b) => a + b, 0) };
@@ -144,7 +150,8 @@ function OrderModal() {
 
   const canGoStep2 = cart.length > 0;
   /** Type, sauces et suppléments sont optionnels : on peut passer sans rien modifier */
-  const canGoStep3 = expandedCart.every((_, i) => {
+  const canGoStep3 = expandedCart.every((line, i) => {
+    if (line.categoryId === 'dessert') return true;
     const opt = optionsByIndex[i] ?? {};
     return (opt.sauces?.length ?? 0) <= MAX_SAUCES;
   });
@@ -154,6 +161,7 @@ function OrderModal() {
     try {
       const menuChoisi = expandedCart.map((line, index) => {
         const opt = optionsByIndex[index] ?? {};
+        const isDessert = line.categoryId === 'dessert';
         return {
           categoryId: line.categoryId,
           categoryName: line.categoryName,
@@ -161,9 +169,9 @@ function OrderModal() {
           price: line.price,
           quantity: 1,
           typeChoice: (opt.type as 'seul' | 'cannette') ?? 'seul',
-          sauces: opt.sauces ?? [],
+          sauces: isDessert ? [] : (opt.sauces ?? []),
           drink: opt.drink ?? '',
-          supplements: opt.supplements ?? [],
+          supplements: isDessert ? [] : (opt.supplements ?? []),
         };
       });
       const res = await fetch('/api/orders', {
@@ -242,61 +250,66 @@ function OrderModal() {
             </>
           )}
 
-          {/* Step 1: Catégories puis menu avec +/- */}
+          {/* Step 1: Tous les menus (Bokit, Agoulou, Sandwiches, Desserts) avec +/- */}
           {step === 1 && (
             <>
               {!menuConfig ? (
                 <p className="text-gray-500">Chargement du menu…</p>
-              ) : !selectedCategory ? (
-                <>
-                  <p className="text-gray-600 mb-4">Choisissez une catégorie</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    {menuConfig.categories.map((cat) => (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        onClick={() => {
-                          setCart([]);
-                          setSelectedCategory(cat);
-                        }}
-                        className="py-3 px-4 rounded-xl bg-orange-50 border border-orange-200 font-medium text-gray-800 hover:bg-orange-100"
-                      >
-                        {cat.name}
-                      </button>
-                    ))}
-                  </div>
-                </>
               ) : (
                 <>
-                  <div className="flex items-center justify-between mb-4">
-                    <button type="button" onClick={() => setSelectedCategory(null)} className="text-sky-600 font-medium">← Retour</button>
-                    <span className="font-bold">{selectedCategory.name}</span>
-                  </div>
-                  <div className="space-y-3">
-                    {selectedCategory.items.map((item) => (
-                      <div key={item.name} className="flex items-center justify-between py-2 border-b">
-                        <div>
-                          <span className="font-medium">{item.name}</span>
-                          <span className="text-gray-600 ml-2">{formatPrice(item.price)}</span>
+                  <p className="text-gray-600 mb-4">Choisissez vos articles</p>
+                  <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-1">
+                    {menuConfig.categories.map((cat) => (
+                      <div key={cat.id} className="bg-white border rounded-xl p-4">
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                          <div>
+                            <div className="font-bold text-lg text-gray-900">{cat.name}</div>
+                            {cat.description && (
+                              <div className="text-xs text-gray-500 mt-1">{cat.description}</div>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <button type="button" onClick={() => removeFromCart(item)} className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center font-bold">−</button>
-                          <span className="w-8 text-center font-medium">{getQuantity(item)}</span>
-                          <button
-                            type="button"
-                            onClick={() => addToCart(item)}
-                            disabled={getQuantity(item) >= MAX_QUANTITY_PER_ITEM}
-                            className="w-8 h-8 rounded-full bg-sky-500 text-white flex items-center justify-center font-bold disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            +
-                          </button>
-                          {getQuantity(item) >= MAX_QUANTITY_PER_ITEM && (
-                            <span className="text-xs text-gray-500">(max {MAX_QUANTITY_PER_ITEM})</span>
-                          )}
+
+                        <div className="space-y-2">
+                          {cat.items.map((item) => {
+                            const qty = getQuantity(cat.id, item.name);
+                            return (
+                              <div
+                                key={item.name}
+                                className="flex items-center justify-between gap-3 py-2 border-b last:border-b-0"
+                              >
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium text-gray-900 truncate">{item.name}</div>
+                                  <div className="text-sm text-gray-600">{formatPrice(item.price)}</div>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => removeFromCart(cat.id, item.name)}
+                                    disabled={qty <= 0}
+                                    className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    −
+                                  </button>
+                                  <span className="w-8 text-center font-medium">{qty}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => addToCart(cat, item)}
+                                    disabled={qty >= MAX_QUANTITY_PER_ITEM}
+                                    className="w-8 h-8 rounded-full bg-sky-500 text-white flex items-center justify-center font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     ))}
                   </div>
+
                   <button
                     type="button"
                     onClick={() => setStep(2)}
@@ -342,35 +355,41 @@ function OrderModal() {
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Sauces (max {MAX_SAUCES})</label>
-                      <div className="flex flex-wrap gap-2">
-                        {menuConfig.sauces.map((s) => {
-                          const list = optionsByIndex[idx]?.sauces ?? [];
-                          const checked = list.includes(s);
-                          const atMax = list.length >= MAX_SAUCES;
-                          return (
-                            <label
-                              key={s}
-                              className={`flex items-center gap-1 ${!checked && atMax ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={checked}
-                                disabled={!checked && atMax}
-                                onChange={() => {
-                                  const next = checked
-                                    ? list.filter((x) => x !== s)
-                                    : list.length < MAX_SAUCES
-                                      ? [...list, s]
-                                      : list;
-                                  setOption(idx, 'sauces', next);
-                                }}
-                              />
-                              <span className="text-sm">{s}</span>
-                            </label>
-                          );
-                        })}
-                      </div>
+                      {line.categoryId !== 'dessert' ? (
+                        <>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Sauces (max {MAX_SAUCES})</label>
+                          <div className="flex flex-wrap gap-2">
+                            {menuConfig.sauces.map((s) => {
+                              const list = optionsByIndex[idx]?.sauces ?? [];
+                              const checked = list.includes(s);
+                              const atMax = list.length >= MAX_SAUCES;
+                              return (
+                                <label
+                                  key={s}
+                                  className={`flex items-center gap-1 ${!checked && atMax ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={checked}
+                                    disabled={!checked && atMax}
+                                    onChange={() => {
+                                      const next = checked
+                                        ? list.filter((x) => x !== s)
+                                        : list.length < MAX_SAUCES
+                                          ? [...list, s]
+                                          : list;
+                                      setOption(idx, 'sauces', next);
+                                    }}
+                                  />
+                                  <span className="text-sm">{s}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </>
+                      ) : (
+                        <p className="text-xs text-gray-500 mt-1">Dessert : pas de sauce</p>
+                      )}
                     </div>
                     {(optionsByIndex[idx]?.type === 'cannette') && (
                       <div>
@@ -388,26 +407,32 @@ function OrderModal() {
                       </div>
                     )}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Suppléments</label>
-                      <div className="flex flex-wrap gap-2">
-                        {menuConfig.supplements.map((s) => {
-                          const list = optionsByIndex[idx]?.supplements ?? [];
-                          const checked = list.includes(s.name);
-                          return (
-                            <label key={s.name} className="flex items-center gap-1">
-                              <input
-                                type="checkbox"
-                                checked={checked}
-                                onChange={() => {
-                                  const next = checked ? list.filter((x) => x !== s.name) : [...list, s.name];
-                                  setOption(idx, 'supplements', next);
-                                }}
-                              />
-                              <span className="text-sm">{s.name} (+ {formatPrice(s.price)})</span>
-                            </label>
-                          );
-                        })}
-                      </div>
+                      {line.categoryId !== 'dessert' ? (
+                        <>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Suppléments</label>
+                          <div className="flex flex-wrap gap-2">
+                            {menuConfig.supplements.map((s) => {
+                              const list = optionsByIndex[idx]?.supplements ?? [];
+                              const checked = list.includes(s.name);
+                              return (
+                                <label key={s.name} className="flex items-center gap-1">
+                                  <input
+                                    type="checkbox"
+                                    checked={checked}
+                                    onChange={() => {
+                                      const next = checked ? list.filter((x) => x !== s.name) : [...list, s.name];
+                                      setOption(idx, 'supplements', next);
+                                    }}
+                                  />
+                                  <span className="text-sm">{s.name} (+ {formatPrice(s.price)})</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </>
+                      ) : (
+                        <p className="text-xs text-gray-500 mt-1">Dessert : pas de suppléments</p>
+                      )}
                     </div>
                   </div>
                 ))}

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import type { MenuConfigCategory, MenuConfigItem } from '@/lib/types/menuConfig';
 import { formatPrice } from '@/lib/utils/price';
+import { useOrderModal } from '@/app/context/OrderModalContext';
 
 export default function Menu() {
   const [categories, setCategories] = useState<MenuConfigCategory[]>([]);
@@ -11,6 +12,8 @@ export default function Menu() {
   const [selectedCategory, setSelectedCategory] = useState<MenuConfigCategory | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MenuConfigItem | null>(null);
+  const { openOrderModal } = useOrderModal();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     fetch('/api/config/menu')
@@ -121,6 +124,7 @@ export default function Menu() {
               <button
                 type="button"
                 className="w-full py-3 bg-sky-500 hover:bg-sky-600 text-white font-medium rounded-full"
+                onClick={() => { openOrderModal(); setMenuOpen(false); }}
               >
                 Commander
               </button>

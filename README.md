@@ -179,10 +179,10 @@ Tu peux ajouter des captures d’écran dans le dossier `docs/` ou `public/` et 
 
 ### Suivi de commande
 
-<!-- ex: ![Suivi commande](./docs/apercu-suivi-commande.png) -->
+
 ![Suivi commande](./ScreenShoots/KaruFood_Suivie.png)
 
-*Page `/commande/[id]?token=xxx` : statut de la commande.*
+<!-- *Page `/commande/[id]?token=xxx` : statut de la commande.* -->
 
 ---
 
