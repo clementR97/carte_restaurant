@@ -18,7 +18,9 @@ L’admin peut :
 - Consulter le total par commande et le total du jour
 
 ---
+## Projet en ligne (Vercel)
 
+Lien : [Karu'Foods — Application de commande](https://carte-restaurant.vercel.app)
 ## Fonctionnalités
 
 | Zone | Fonctionnalité |
@@ -151,7 +153,10 @@ Tu peux ajouter des captures d’écran dans le dossier `docs/` ou `public/` et 
 ### Modal de commande
 
 <!-- ex: ![Modal commande](./docs/apercu-modal-commande.png) -->
-![Modal commande](./docs/apercu-modal-commande.png)
+![Modal commande](./ScreenShoots/choixArticle.png)
+![Modal commande](./ScreenShoots/optionArticle.png)
+![Modal commande](./ScreenShoots/infoClient.png)
+![Modal commande](./ScreenShoots/suivieCommande.png)
 
 *Étapes du modal : choix emporter/sur place, catégories et plats, options (type, sauces, boisson, suppléments), total et confirmation.*
 
@@ -179,12 +184,27 @@ Tu peux ajouter des captures d’écran dans le dossier `docs/` ou `public/` et 
 
 ### Suivi de commande
 
-
+![Modal commande](./ScreenShoots/suivieCommande.png)
 ![Suivi commande](./ScreenShoots/KaruFood_Suivie.png)
 
 <!-- *Page `/commande/[id]?token=xxx` : statut de la commande.* -->
 
 ---
+
+### version mobile
+
+![Mobile Accueil](./ScreenShoots/mobileAccueil.png)
+![Mobile Accueil](./ScreenShoots/mobileAccueil2.png)
+![Mobile Modal commande](./ScreenShoots/mobileCommande.png)
+![Mobile Modal commande](./ScreenShoots/mobileCommande2.png)
+![Mobile Modal commande](./ScreenShoots/suivieCommande.png)
+![Mobile Modal Suivi commande](./ScreenShoots/KaruFood_Suivie.png)
+
+<!-- *Page `/commande/[id]?token=xxx` : statut de la commande.* -->
+
+---
+
+
 
 ### Action de commande
 ![Action de commande](./ScreenShoots/action-commande.gif)
